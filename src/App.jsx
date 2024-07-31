@@ -8,9 +8,32 @@ import * as Yup from "yup";
 import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [tasks, setTasks] = useState(initialTasks);
+  const [filter, setFilter] = useState("");
 
-  return <div></div>;
+  const addTask = (newTask) => {
+    setTasks((prevTasks) => {
+      return [...prevTasks, newTask];
+    });
+  };
+
+  const deleteTask = (taskId) => {
+    setTasks((prevTasks) => {
+      return prevTasks.filter((task) => task.id !== taskId);
+    });
+  };
+
+  const visibleTasks = tasks.filter((task) =>
+    task.text.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  return (
+    <div className={css.container}>
+      <ContactForm onAdd={addTask} />
+      <Filter value={filter} onFilter={setFilter} />
+      <ContactList tasks={visibleTasks} onDelete={deleteTask} />
+    </div>
+  );
 }
 
 export default App;
