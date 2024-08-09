@@ -1,37 +1,50 @@
-import { useState } from "react";
-import Contact from "./components/Contact/Contact";
-import ContactForm from "./components/ContactForm/ContactForm";
-import ContactList from "./components/ContactList/ContactList";
-import SearchBox from "./components/SearchBox/SearchBox";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
+import { useState, useEffect } from "react";
+import ContactForm from "./components/ContactForm/ContactForm.jsx";
+import ContactList from "./components/ContactList/ContactList.jsx";
+import SearchBox from "./components/SearchBox/SearchBox.jsx";
+import { nanoid } from "nanoid";
+import initialContacts from "./contacts.json";
 import "./App.css";
 
 function App() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [contacts, setContacts] = useState(() => {
+    const savedContacts = localStorage.getItem("contacts");
+    return savedContacts ? JSON.parse(savedContacts) : initialContacts;
+  });
   const [filter, setFilter] = useState("");
 
-  const addTask = (newTask) => {
-    setTasks((prevTasks) => {
-      return [...prevTasks, newTask];
+  useEffect(() => {
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+  }, [contacts]);
+
+  const addContact = (name, number) => {
+    const newContact = {
+      id: nanoid(),
+      name,
+      number,
+    };
+    setContacts((prevContacts) => [...prevContacts, newContact]);
+  };
+
+  const deleteContact = (contactId) => {
+    setContacts((prevContacts) => {
+      return prevContacts.filter((contact) => contact.id !== contactId);
     });
   };
 
-  const deleteTask = (taskId) => {
-    setTasks((prevTasks) => {
-      return prevTasks.filter((task) => task.id !== taskId);
-    });
-  };
-
-  const visibleTasks = tasks.filter((task) =>
-    task.text.toLowerCase().includes(filter.toLowerCase())
-  );
+  const visibleContacts = contacts.filter((contact) => {
+    return (
+      typeof contact.name === "string" &&
+      contact.name.toLowerCase().includes(filter.toLowerCase())
+    );
+  });
 
   return (
-    <div className={css.container}>
-      <ContactForm onAdd={addTask} />
-      <Filter value={filter} onFilter={setFilter} />
-      <ContactList tasks={visibleTasks} onDelete={deleteTask} />
+    <div>
+      <h1>Phonebook</h1>
+      <ContactForm onAddContact={addContact} />
+      <SearchBox value={filter} onFilter={setFilter} />
+      <ContactList contacts={visibleContacts} onDelete={deleteContact} />
     </div>
   );
 }
